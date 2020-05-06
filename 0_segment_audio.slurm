@@ -65,7 +65,7 @@ OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK python 0_segment_audio.py \
     --ray_address=$REDIS_ADDRESS \
     --ray_password=$REDIS_PASSWORD \
     --cores_per_node=$SLURM_CPUS_PER_TASK \
-    --batch_size=1
+    --batch_size=128
 
 run_on_exit
 

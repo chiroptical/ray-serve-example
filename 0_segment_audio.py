@@ -42,6 +42,7 @@ from pathlib import Path
 from splitter import Splitter
 import torch
 from os import environ
+from timeit import default_timer as timer
 
 
 class RunSplitter:
@@ -65,15 +66,20 @@ class RunSplitter:
 
         dataloader = torch.utils.data.DataLoader(
             dataset,
-            batch_size=batch_size,
+            # batch_size=batch_size,
+            batch_size=1,
             shuffle=False,
             num_workers=args["--cores_per_node"],
             collate_fn=dataset.collate_fn,
         )
 
+        start = timer()
         outputs = []
         for idx, data in enumerate(dataloader):
-            outputs.append((environ["OMP_NUM_THREADS"], list(data)))
+            for out in data:
+                outputs.append(out)
+        end = timer()
+        print("DEBUG: end - start", end - start)
 
         return outputs
 
@@ -115,6 +121,6 @@ serve.link("splitter", "splitter:v0")
 
 handle = serve.get_handle("splitter")
 
-ids = [handle.remote(audio_paths=audio_path) for audio_path in all_wavs[0:6]]
+ids = [handle.remote(audio_paths=audio_path) for audio_path in all_wavs]
 results = ray.get(ids)
 print(results)

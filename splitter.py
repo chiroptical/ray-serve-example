@@ -64,7 +64,7 @@ class Splitter(torch.utils.data.Dataset):
             )
             if not annotation_file.is_file():
                 sys.stderr.write(f"Warning: Found no Raven annotations for {wav}\n")
-                return {"data": []}
+                return {"data": [""]}
 
         # TODO: Need to feed audio related configurations to `load`
         wav_samples, wav_sample_rate = load(wav)
@@ -135,4 +135,5 @@ class Splitter(torch.utils.data.Dataset):
         return {"data": outputs}
 
     def collate_fn(*batch):
-        return chain.from_iterable([x["data"] for x in batch[1]])
+        # print("BATCH: ", batch)
+        return [x["data"] for x in batch[1]]
