@@ -62,6 +62,8 @@ class RunSplitter:
             output_directory=args["--output_directory"],
         )
 
+        print(args["--cores_per_node"])
+
         dataloader = torch.utils.data.DataLoader(
             dataset,
             batch_size=batch_size,
@@ -72,8 +74,7 @@ class RunSplitter:
 
         outputs = []
         for idx, data in enumerate(dataloader):
-            for output in data:
-                outputs.append(output)
+            outputs.append(list(data))
 
         return outputs
 
@@ -92,22 +93,16 @@ else:
     args["--batch_size"] = 1
 
 ray.init(address=args["--ray_address"], redis_password=args["--ray_password"])
-for _ in range(10):
-    try:
-        serve.init(blocking=True)
-        break
-    except:
-        pass
-        
+serve.init(start_server=False)
 
 input_p = Path(args["--input_directory"])
 output_p = Path(args["--output_directory"])
 
 all_wavs = list(input_p.rglob("**/*.WAV"))
 
-#model = RunSplitter()
-#predictions = model(None, audio_paths=all_wavs[0:10])
-#print(predictions)
+# model = RunSplitter()
+# predictions = model(None, audio_paths=all_wavs[0:10])
+# print(predictions)
 
 serve.create_endpoint("splitter")
 serve.create_backend(
