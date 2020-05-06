@@ -36,12 +36,12 @@ ray start \
     --redis-password=$REDIS_PASSWORD \
     --temp-dir=$SLURM_SCRATCH \
     --plasma-directory=$SLURM_SCRATCH \
-    --num-cpus=$SLURM_CPUS_PER_TASK \
+    --num-cpus=1 \
     --object-store-memory=$OBJECT_STORE_MEMORY
 
 for worker in ${hostnames[@]:1}; do
     ssh $worker \
-        bash $SCRIPTS_DIR/up.sh $WORKON_HOME $PYRAY_ENV $SLURM_SCRATCH $REDIS_ADDRESS $REDIS_PASSWORD $SLURM_CPUS_PER_TASK $OBJECT_STORE_MEMORY &
+        bash $SCRIPTS_DIR/up.sh $WORKON_HOME $PYRAY_ENV $SLURM_SCRATCH $REDIS_ADDRESS $REDIS_PASSWORD 1 $OBJECT_STORE_MEMORY &
 done
 sleep 30
 
@@ -55,7 +55,7 @@ run_on_exit () {
 }
 trap run_on_exit EXIT
 
-python 0_segment_audio.py \
+OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK python 0_segment_audio.py \
     --input_directory=/bgfs/jkitzes/bmooreii/wolves \
     --output_directory=$SLURM_SUBMIT_DIR/wolves-splits \
     --duration=5 \
@@ -65,7 +65,7 @@ python 0_segment_audio.py \
     --ray_address=$REDIS_ADDRESS \
     --ray_password=$REDIS_PASSWORD \
     --cores_per_node=$SLURM_CPUS_PER_TASK \
-    --batch_size=32
+    --batch_size=1
 
 run_on_exit
 

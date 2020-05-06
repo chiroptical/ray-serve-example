@@ -41,6 +41,7 @@ from ray import serve
 from pathlib import Path
 from splitter import Splitter
 import torch
+from os import environ
 
 
 class RunSplitter:
@@ -62,8 +63,6 @@ class RunSplitter:
             output_directory=args["--output_directory"],
         )
 
-        print(args["--cores_per_node"])
-
         dataloader = torch.utils.data.DataLoader(
             dataset,
             batch_size=batch_size,
@@ -74,7 +73,7 @@ class RunSplitter:
 
         outputs = []
         for idx, data in enumerate(dataloader):
-            outputs.append(list(data))
+            outputs.append((environ["OMP_NUM_THREADS"], list(data)))
 
         return outputs
 
@@ -108,12 +107,14 @@ serve.create_endpoint("splitter")
 serve.create_backend(
     RunSplitter,
     "splitter:v0",
-    backend_config=serve.BackendConfig(num_replicas=2, max_batch_size=64),
+    backend_config=serve.BackendConfig(
+        num_replicas=2, max_batch_size=args["--batch_size"]
+    ),
 )
 serve.link("splitter", "splitter:v0")
 
 handle = serve.get_handle("splitter")
 
-ids = [handle.remote(audio_paths=audio_path) for audio_path in all_wavs[0:200]]
+ids = [handle.remote(audio_paths=audio_path) for audio_path in all_wavs[0:6]]
 results = ray.get(ids)
 print(results)
