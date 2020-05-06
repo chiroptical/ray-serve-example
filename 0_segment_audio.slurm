@@ -64,8 +64,9 @@ OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK python 0_segment_audio.py \
     --labels=/ihome/sam/bmooreii/projects/opensoundscape/wolves/0-examine-dataset/labels.csv \
     --ray_address=$REDIS_ADDRESS \
     --ray_password=$REDIS_PASSWORD \
+    --num_nodes=$SLURM_NNODES \
     --cores_per_node=$SLURM_CPUS_PER_TASK \
-    --batch_size=128
+    --batch_size=$SLURM_CPUS_PER_TASK
 
 run_on_exit
 

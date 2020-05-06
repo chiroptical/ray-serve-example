@@ -3,6 +3,7 @@
 Usage:
     0-segment-audio.ray.py [-hv] (-i <directory>) (-o <directory>) (-d <duration>) (-p <overlap>)
         [-a -l <labels.csv>] (-r <address>) (-s <password>) (-c <cores_per_node>) [-b <batch_size>]
+        (-n <nodes>)
 
 Positional Arguments:
 
@@ -19,6 +20,7 @@ Options:
                                             incorrect label (column `from`) to the corrected label (column `to`)
     -r --ray_address <address>          The ray cluster address
     -s --ray_password <password>        The ray cluster password
+    -n --num_nodes <nodes>              The number of nodes
     -c --cores_per_node <cores>         Number of cores per node
     -b --batch_size <batch_size>        The batch size [default: 1]
 """
@@ -88,6 +90,9 @@ args = docopt(__doc__, version="0_segment_audio.ray.py version 0.0.1")
 
 args["--duration"] = check_is_integer(args["--duration"], "--duration")
 args["--overlap"] = check_is_integer(args["--overlap"], "--overlap")
+args["--num_nodes"] = check_is_integer(
+    args["--num_nodes"], "--num_nodes"
+)
 args["--cores_per_node"] = check_is_integer(
     args["--cores_per_node"], "--cores_per_node"
 )
@@ -114,7 +119,7 @@ serve.create_backend(
     RunSplitter,
     "splitter:v0",
     backend_config=serve.BackendConfig(
-        num_replicas=2, max_batch_size=args["--batch_size"]
+        num_replicas=args["--num_nodes"], max_batch_size=args["--batch_size"]
     ),
 )
 serve.link("splitter", "splitter:v0")
