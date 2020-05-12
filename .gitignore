@@ -1,4 +1,6 @@
 0_segment_audio.out
+0_segment_audio.vanilla.out
 __pycache__/
 wolves-splits/
 inputs/
+splits/
